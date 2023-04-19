@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 define("@scom/scom-wallet-modal/interface.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    ;
 });
 define("@scom/scom-wallet-modal/index.css.ts", ["require", "exports", "@ijstech/components"], function (require, exports, components_1) {
     "use strict";
@@ -76,26 +77,259 @@ define("@scom/scom-wallet-modal/index.css.ts", ["require", "exports", "@ijstech/
         }
     });
 });
-define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/index.css.ts"], function (require, exports, components_2, eth_wallet_1, index_css_1) {
+define("@scom/scom-wallet-modal/network.ts", ["require", "exports", "@ijstech/eth-wallet", "@scom/scom-network-list"], function (require, exports, eth_wallet_1, scom_network_list_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    const Theme = components_2.Styles.Theme.ThemeVars;
-    let ScomWalletModal = class ScomWalletModal extends components_2.Module {
+    exports.getEnv = exports.getInfuraId = exports.isValidEnv = exports.getSiteSupportedNetworks = exports.getNetworkInfo = exports.updateNetworks = void 0;
+    const updateNetworks = (options) => {
+        var _a;
+        if (options.env) {
+            setEnv(options.env);
+        }
+        if (options.infuraId) {
+            setInfuraId(options.infuraId);
+        }
+        if (options.networks) {
+            setNetworkList(options.networks, options.infuraId);
+        }
+        const clientWalletConfig = {
+            defaultChainId: state.defaultChainId,
+            networks: Object.values(state.networkMap),
+            infuraId: state.infuraId,
+        };
+        if ((_a = eth_wallet_1.Wallet.getClientInstance()) === null || _a === void 0 ? void 0 : _a.initClientWallet)
+            eth_wallet_1.Wallet.getClientInstance().initClientWallet(clientWalletConfig);
+    };
+    exports.updateNetworks = updateNetworks;
+    const state = {
+        networkMap: {},
+        defaultChainId: 0,
+        infuraId: "",
+        env: ""
+    };
+    const setNetworkList = (networkList, infuraId) => {
+        var _a, _b;
+        state.networkMap = {};
+        const defaultNetworkList = scom_network_list_1.default();
+        const defaultNetworkMap = defaultNetworkList.reduce((acc, cur) => {
+            acc[cur.chainId] = cur;
+            return acc;
+        }, {});
+        if (networkList === "*") {
+            const networksMap = defaultNetworkMap;
+            for (const chainId in networksMap) {
+                const networkInfo = networksMap[chainId];
+                let explorerUrl = '';
+                if (networkInfo) {
+                    explorerUrl = networkInfo.blockExplorerUrls && networkInfo.blockExplorerUrls.length ? networkInfo.blockExplorerUrls[0] : "";
+                    if (state.infuraId && networkInfo.rpcUrls && networkInfo.rpcUrls.length > 0) {
+                        for (let i = 0; i < networkInfo.rpcUrls.length; i++) {
+                            networkInfo.rpcUrls[i] = networkInfo.rpcUrls[i].replace(/{InfuraId}/g, infuraId);
+                        }
+                    }
+                }
+                state.networkMap[networkInfo.chainId] = Object.assign(Object.assign({}, networkInfo), { symbol: ((_a = networkInfo.nativeCurrency) === null || _a === void 0 ? void 0 : _a.symbol) || "", explorerTxUrl: explorerUrl ? `${explorerUrl}${explorerUrl.endsWith("/") ? "" : "/"}tx/` : "", explorerAddressUrl: explorerUrl ? `${explorerUrl}${explorerUrl.endsWith("/") ? "" : "/"}address/` : "" });
+            }
+        }
+        else if (Array.isArray(networkList)) {
+            const networksMap = defaultNetworkMap;
+            Object.values(defaultNetworkMap).forEach(network => {
+                state.networkMap[network.chainId] = Object.assign(Object.assign({}, network), { isDisabled: true });
+            });
+            for (let network of networkList) {
+                const networkInfo = networksMap[network.chainId];
+                let explorerUrl = '';
+                if (networkInfo) {
+                    explorerUrl = networkInfo.blockExplorerUrls && networkInfo.blockExplorerUrls.length ? networkInfo.blockExplorerUrls[0] : "";
+                    if (infuraId && network.rpcUrls && network.rpcUrls.length > 0) {
+                        for (let i = 0; i < network.rpcUrls.length; i++) {
+                            networkInfo.rpcUrls[i] = network.rpcUrls[i].replace(/{InfuraId}/g, infuraId);
+                        }
+                    }
+                }
+                state.networkMap[network.chainId] = Object.assign(Object.assign(Object.assign({}, networkInfo), network), { symbol: ((_b = networkInfo.nativeCurrency) === null || _b === void 0 ? void 0 : _b.symbol) || "", explorerTxUrl: explorerUrl ? `${explorerUrl}${explorerUrl.endsWith("/") ? "" : "/"}tx/` : "", explorerAddressUrl: explorerUrl ? `${explorerUrl}${explorerUrl.endsWith("/") ? "" : "/"}address/` : "", isDisabled: false });
+            }
+        }
+    };
+    const getNetworkInfo = (chainId) => {
+        return state.networkMap[chainId];
+    };
+    exports.getNetworkInfo = getNetworkInfo;
+    const getSiteSupportedNetworks = () => {
+        let networkFullList = Object.values(state.networkMap);
+        let list = networkFullList.filter(network => !network.isDisabled && exports.isValidEnv(network.env));
+        return list;
+    };
+    exports.getSiteSupportedNetworks = getSiteSupportedNetworks;
+    const isValidEnv = (env) => {
+        const _env = state.env === 'testnet' || state.env === 'mainnet' ? state.env : "";
+        return !_env || !env || env === _env;
+    };
+    exports.isValidEnv = isValidEnv;
+    const setInfuraId = (infuraId) => {
+        state.infuraId = infuraId;
+    };
+    const getInfuraId = () => {
+        return state.infuraId;
+    };
+    exports.getInfuraId = getInfuraId;
+    const setEnv = (env) => {
+        state.env = env;
+    };
+    const getEnv = () => {
+        return state.env;
+    };
+    exports.getEnv = getEnv;
+});
+define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/network.ts"], function (require, exports, components_2, eth_wallet_2, network_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.getWalletPluginProvider = exports.getWalletPluginMap = exports.setWalletPluginProvider = exports.updateWallets = exports.getSupportedWalletProviders = exports.connectWallet = exports.initWalletPlugins = exports.WalletPlugin = void 0;
+    var WalletPlugin;
+    (function (WalletPlugin) {
+        WalletPlugin["MetaMask"] = "metamask";
+        WalletPlugin["WalletConnect"] = "walletconnect";
+    })(WalletPlugin = exports.WalletPlugin || (exports.WalletPlugin = {}));
+    const state = {
+        wallets: [],
+        walletPluginMap: {}
+    };
+    async function getWalletPluginConfigProvider(wallet, pluginName, packageName, events, options) {
+        switch (pluginName) {
+            case WalletPlugin.MetaMask:
+                return new eth_wallet_2.MetaMaskProvider(wallet, events, options);
+            case WalletPlugin.WalletConnect:
+                return new eth_wallet_2.Web3ModalProvider(wallet, events, options);
+            default: {
+                if (packageName) {
+                    const provider = await components_2.application.loadPackage(packageName, '*');
+                    return new provider(wallet, events, options);
+                }
+            }
+        }
+    }
+    async function initWalletPlugins(eventHandlers) {
+        let wallet = eth_wallet_2.Wallet.getClientInstance();
+        state.walletPluginMap = {};
+        const events = {
+            onAccountChanged: async (account) => {
+                var _a, _b, _c, _d;
+                let connected = !!account;
+                if (eventHandlers && eventHandlers.accountsChanged) {
+                    let { requireLogin, isLoggedIn } = await eventHandlers.accountsChanged(account);
+                    if (requireLogin && !isLoggedIn)
+                        connected = false;
+                }
+                if (connected) {
+                    localStorage.setItem('walletProvider', ((_b = (_a = eth_wallet_2.Wallet.getClientInstance()) === null || _a === void 0 ? void 0 : _a.clientSideProvider) === null || _b === void 0 ? void 0 : _b.name) || '');
+                    document.cookie = `scom__wallet=${((_d = (_c = eth_wallet_2.Wallet.getClientInstance()) === null || _c === void 0 ? void 0 : _c.clientSideProvider) === null || _d === void 0 ? void 0 : _d.name) || ''}`;
+                }
+                components_2.application.EventBus.dispatch("isWalletConnected" /* IsWalletConnected */, connected);
+            },
+            onChainChanged: async (chainIdHex) => {
+                const chainId = Number(chainIdHex);
+                if (eventHandlers && eventHandlers.chainChanged) {
+                    eventHandlers.chainChanged(chainId);
+                }
+                components_2.application.EventBus.dispatch("chainChanged" /* chainChanged */, chainId);
+            }
+        };
+        let networkList = network_1.getSiteSupportedNetworks();
+        const rpcs = {};
+        for (const network of networkList) {
+            let rpc = network.rpcUrls[0];
+            if (rpc)
+                rpcs[network.chainId] = rpc;
+        }
+        for (let walletPlugin of state.wallets) {
+            let pluginName = walletPlugin.name;
+            let providerOptions;
+            if (pluginName == WalletPlugin.WalletConnect) {
+                providerOptions = {
+                    name: pluginName,
+                    infuraId: network_1.getInfuraId(),
+                    bridge: "https://bridge.walletconnect.org",
+                    rpc: rpcs,
+                    useDefaultProvider: true
+                };
+            }
+            else {
+                providerOptions = {
+                    name: pluginName,
+                    infuraId: network_1.getInfuraId(),
+                    rpc: rpcs,
+                    useDefaultProvider: true
+                };
+            }
+            let provider = await getWalletPluginConfigProvider(wallet, pluginName, walletPlugin.packageName, events, providerOptions);
+            exports.setWalletPluginProvider(pluginName, {
+                name: pluginName,
+                packageName: walletPlugin.packageName,
+                provider
+            });
+        }
+    }
+    exports.initWalletPlugins = initWalletPlugins;
+    async function connectWallet(walletPlugin) {
+        // let walletProvider = localStorage.getItem('walletProvider') || '';
+        let wallet = eth_wallet_2.Wallet.getClientInstance();
+        if (!wallet.chainId) {
+            // wallet.chainId = getDefaultChainId();
+        }
+        let provider = exports.getWalletPluginProvider(walletPlugin);
+        if (provider === null || provider === void 0 ? void 0 : provider.installed()) {
+            await wallet.connect(provider);
+        }
+        return wallet;
+    }
+    exports.connectWallet = connectWallet;
+    const getSupportedWalletProviders = () => {
+        const walletPluginMap = exports.getWalletPluginMap();
+        return state.wallets.map(v => { var _a; return ((_a = walletPluginMap[v.name]) === null || _a === void 0 ? void 0 : _a.provider) || null; });
+    };
+    exports.getSupportedWalletProviders = getSupportedWalletProviders;
+    const updateWallets = (options) => {
+        if (options.wallets) {
+            state.wallets = options.wallets;
+        }
+    };
+    exports.updateWallets = updateWallets;
+    const setWalletPluginProvider = (name, wallet) => {
+        state.walletPluginMap[name] = wallet;
+    };
+    exports.setWalletPluginProvider = setWalletPluginProvider;
+    const getWalletPluginMap = () => {
+        return state.walletPluginMap;
+    };
+    exports.getWalletPluginMap = getWalletPluginMap;
+    const getWalletPluginProvider = (name) => {
+        var _a;
+        return (_a = state.walletPluginMap[name]) === null || _a === void 0 ? void 0 : _a.provider;
+    };
+    exports.getWalletPluginProvider = getWalletPluginProvider;
+});
+define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/index.css.ts", "@scom/scom-wallet-modal/wallet.ts", "@scom/scom-wallet-modal/network.ts", "@scom/scom-wallet-modal/wallet.ts"], function (require, exports, components_3, eth_wallet_3, index_css_1, wallet_1, network_2, wallet_2) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    const Theme = components_3.Styles.Theme.ThemeVars;
+    let ScomWalletModal = class ScomWalletModal extends components_3.Module {
         constructor(parent, options) {
             super(parent, options);
             this.renderWalletList = async () => {
                 if (!this.gridWalletList)
                     return;
+                if (this.wallets.length)
+                    await wallet_1.initWalletPlugins();
                 this.gridWalletList.clearInnerHTML();
+                const walletList = wallet_1.getSupportedWalletProviders();
                 this.walletMapper = new Map();
-                this.wallets.forEach((wallet) => {
-                    var _a, _b;
+                walletList.forEach((wallet) => {
                     const isActive = this.isWalletActive(wallet.name);
                     if (isActive)
                         this.currActiveWallet = wallet.name;
                     const hsWallet = (this.$render("i-hstack", { class: isActive ? 'is-actived list-item' : 'list-item', verticalAlignment: 'center', gap: 12, background: { color: Theme.colors.secondary.light }, border: { radius: 10 }, position: "relative", padding: { top: '0.5rem', bottom: '0.5rem', left: '0.5rem', right: '0.5rem' }, horizontalAlignment: "space-between", onClick: () => this.onWalletSelected(wallet) },
-                        this.$render("i-label", { caption: (_a = wallet.provider) === null || _a === void 0 ? void 0 : _a.displayName, margin: { left: '1rem' }, wordBreak: "break-word", font: { size: '.875rem', bold: true, color: Theme.colors.primary.dark } }),
-                        this.$render("i-image", { width: 34, height: "auto", url: (_b = wallet.provider) === null || _b === void 0 ? void 0 : _b.image })));
+                        this.$render("i-label", { caption: wallet.displayName, margin: { left: '1rem' }, wordBreak: "break-word", font: { size: '.875rem', bold: true, color: Theme.colors.primary.dark } }),
+                        this.$render("i-image", { width: 34, height: "auto", url: wallet.image })));
                     this.walletMapper.set(wallet.name, hsWallet);
                     this.gridWalletList.append(hsWallet);
                 });
@@ -107,11 +341,29 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
             return self;
         }
         get wallets() {
-            return this._wallets;
+            return this._data.wallets;
         }
         set wallets(value) {
-            this._wallets = value;
+            this._data.wallets = value;
+            wallet_2.updateWallets({ wallets: value || [] });
             this.renderWalletList();
+        }
+        get networks() {
+            return this._data.networks;
+        }
+        set networks(value) {
+            this._data.networks = value;
+            network_2.updateNetworks({ networks: value || [] });
+            this.renderWalletList();
+        }
+        async setData(data) {
+            this._data = data;
+            wallet_2.updateWallets({ wallets: data.wallets || [] });
+            network_2.updateNetworks({ networks: data.networks || [] });
+            await this.renderWalletList();
+        }
+        async getData() {
+            return this._data;
         }
         showModal() {
             this.mdConnect.visible = true;
@@ -119,18 +371,14 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
         hideModal() {
             this.mdConnect.visible = false;
         }
-        getWalletPluginProvider(walletPlugin) {
-            var _a;
-            return (_a = this.wallets.find(wallet => { var _a; return ((_a = wallet === null || wallet === void 0 ? void 0 : wallet.provider) === null || _a === void 0 ? void 0 : _a.name) === walletPlugin; })) === null || _a === void 0 ? void 0 : _a.provider;
-        }
         isWalletActive(walletPlugin) {
             var _a;
-            let provider = this.getWalletPluginProvider(walletPlugin);
-            return provider ? provider.installed() && ((_a = eth_wallet_1.Wallet.getClientInstance().clientSideProvider) === null || _a === void 0 ? void 0 : _a.name) === walletPlugin : false;
+            let provider = wallet_1.getWalletPluginProvider(walletPlugin);
+            return provider ? provider.installed() && ((_a = eth_wallet_3.Wallet.getClientInstance().clientSideProvider) === null || _a === void 0 ? void 0 : _a.name) === walletPlugin : false;
         }
         onOpenModal() {
             var _a, _b, _c;
-            let wallet = eth_wallet_1.Wallet.getClientInstance();
+            let wallet = eth_wallet_3.Wallet.getClientInstance();
             let isConnected = wallet.isConnected;
             if (this.currActiveWallet && this.walletMapper.has(this.currActiveWallet)) {
                 this.walletMapper.get(this.currActiveWallet).classList.remove('is-actived');
@@ -140,14 +388,24 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
             }
             this.currActiveWallet = (_c = wallet.clientSideProvider) === null || _c === void 0 ? void 0 : _c.name;
         }
-        onWalletSelected(wallet) {
+        openLink(link) {
+            return window.open(link, '_blank');
+        }
+        async onWalletSelected(wallet) {
+            const provider = wallet_1.getWalletPluginProvider(wallet.name);
+            if (provider === null || provider === void 0 ? void 0 : provider.installed())
+                await wallet_1.connectWallet(wallet.name);
+            else
+                this.openLink(provider.homepage);
             this.hideModal();
             if (this.onCustomWalletSelected)
                 this.onCustomWalletSelected(wallet);
         }
         init() {
             super.init();
-            this.wallets = this.getAttribute('wallets', true, []);
+            const networks = this.getAttribute('networks', true, []);
+            const wallets = this.getAttribute('wallets', true, []);
+            this.setData({ networks, wallets });
             this.onCustomWalletSelected = this.getAttribute('onCustomWalletSelected', true) || this.onCustomWalletSelected;
         }
         render() {
@@ -160,8 +418,8 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
         }
     };
     ScomWalletModal = __decorate([
-        components_2.customModule,
-        components_2.customElements('i-scom-wallet-modal')
+        components_3.customModule,
+        components_3.customElements('i-scom-wallet-modal')
     ], ScomWalletModal);
     exports.default = ScomWalletModal;
 });
