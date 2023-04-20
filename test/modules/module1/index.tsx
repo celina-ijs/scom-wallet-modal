@@ -1,5 +1,5 @@
 import { Module, customModule, Container, Button, Panel } from '@ijstech/components';
-import { MetaMaskProvider, Wallet } from '@ijstech/eth-wallet';
+import { Wallet } from '@ijstech/eth-wallet';
 import ScomWalletModal, { IWalletPlugin } from '@scom/scom-wallet-modal';
 
 @customModule
@@ -9,14 +9,18 @@ export default class Module1 extends Module {
     private mdModal1: ScomWalletModal;
     private mdModal2: ScomWalletModal;
     private _wallets: IWalletPlugin[];
+    private _networks: any[];
 
     constructor(parent?: Container, options?: any) {
         super(parent, options);
-        let wallet: any = Wallet.getClientInstance();
         this._wallets = [
             {
-                name: 'metamask',
-                provider: new MetaMaskProvider(wallet)
+                name: 'metamask'
+            }
+        ]
+        this._networks = [
+            {
+                chainId: 43114
             }
         ]
     }
@@ -24,10 +28,13 @@ export default class Module1 extends Module {
     async init() {
         super.init();
         this.mdModal2 = await ScomWalletModal.create({
-            wallets: this._wallets
+            wallets: this._wallets,
+            networks: this._networks
         })
         this.mainStack.appendChild(this.mdModal2);
-        this.button.onClick = () => this.mdModal2.showModal()
+        this.button.onClick = () => {
+            this.mdModal2.showModal()
+        }
     }
 
     private onOpenModal() {
@@ -46,6 +53,7 @@ export default class Module1 extends Module {
                 <i-scom-wallet-modal
                     id="mdModal1"
                     wallets={this._wallets}
+                    networks={this._networks}
                 ></i-scom-wallet-modal>
             </i-hstack>
             <i-hstack id="mainStack" margin={{top: '1rem', left: '1rem'}} gap="2rem">

@@ -10,20 +10,22 @@ import {
   customModule
 } from '@ijstech/components'
 import {} from '@ijstech/eth-contract'
-import { IWalletPlugin } from './interface'
-import { Wallet } from '@ijstech/eth-wallet'
+import { IData, INetworkConfig, IWalletPlugin } from './interface'
+import { IClientSideProvider, Wallet } from '@ijstech/eth-wallet'
 import customStyle from './index.css'
+import { connectWallet, getSupportedWalletProviders, getWalletPluginProvider, initWalletPlugins } from './wallet'
+import { updateNetworks } from './network'
+import { updateWallets } from './wallet'
 export { IWalletPlugin }
 
 const Theme = Styles.Theme.ThemeVars
 
-type onSelectedCallback = (wallet: IWalletPlugin) => void;
+type onSelectedCallback = (wallet: IClientSideProvider) => void;
 interface ScomWalletModalElement extends ControlElement {
   wallets: IWalletPlugin[];
+  networks?: INetworkConfig[];
   onCustomWalletSelected?: onSelectedCallback
 }
-
-declare const window: any
 
 declare global {
   namespace JSX {
@@ -36,9 +38,9 @@ declare global {
 @customModule
 @customElements('i-scom-wallet-modal')
 export default class ScomWalletModal extends Module {
-  private _wallets: IWalletPlugin[];
   private walletMapper: Map<string, HStack>;
   private currActiveWallet: string;
+  private _data: IData;
 
   private gridWalletList: GridLayout;
   private mdConnect: Modal;
@@ -56,11 +58,32 @@ export default class ScomWalletModal extends Module {
   }
 
   get wallets() {
-    return this._wallets
+    return this._data.wallets
   }
   set wallets(value: IWalletPlugin[]) {
-    this._wallets = value
-    this.renderWalletList()
+    this._data.wallets = value
+    updateWallets({wallets: value || []})
+    this.renderWalletList();
+  }
+
+  get networks() {
+    return this._data.networks
+  }
+  set networks(value: INetworkConfig[]) {
+    this._data.networks = value
+    updateNetworks({networks: value || []})
+    this.renderWalletList();
+  }
+
+  async setData(data: IData) {
+    this._data = data;
+    updateWallets({wallets: data.wallets || []})
+    updateNetworks({networks: data.networks || []})
+    await this.renderWalletList();
+  }
+
+  async getData() {
+    return this._data;
   }
 
   showModal() {
@@ -71,12 +94,8 @@ export default class ScomWalletModal extends Module {
     this.mdConnect.visible = false;
   }
 
-  private getWalletPluginProvider(walletPlugin: string): any {
-    return this.wallets.find(wallet => wallet?.provider?.name === walletPlugin)?.provider;
-  }
-
   private isWalletActive(walletPlugin: string) {
-    let provider = this.getWalletPluginProvider(walletPlugin);
+    let provider = getWalletPluginProvider(walletPlugin);
     return provider ? provider.installed() && Wallet.getClientInstance().clientSideProvider?.name === walletPlugin : false;
   }
 
@@ -92,7 +111,16 @@ export default class ScomWalletModal extends Module {
     this.currActiveWallet = wallet.clientSideProvider?.name;
   }
 
-  onWalletSelected(wallet: IWalletPlugin) {
+  private openLink(link: any) {
+    return window.open(link, '_blank');
+  }
+
+  private async onWalletSelected(wallet: IClientSideProvider) {
+    const provider = getWalletPluginProvider(wallet.name);
+    if (provider?.installed())
+      await connectWallet(wallet.name);
+    else
+      this.openLink(provider.homepage);
     this.hideModal()
     if (this.onCustomWalletSelected)
       this.onCustomWalletSelected(wallet)
@@ -100,9 +128,11 @@ export default class ScomWalletModal extends Module {
 
   renderWalletList = async () => {
     if (!this.gridWalletList) return;
+    if (this.wallets.length) await initWalletPlugins();
     this.gridWalletList.clearInnerHTML();
+    const walletList = getSupportedWalletProviders();
     this.walletMapper = new Map();
-    this.wallets.forEach((wallet) => {
+    walletList.forEach((wallet) => {
       const isActive = this.isWalletActive(wallet.name);
       if (isActive) this.currActiveWallet = wallet.name;
       const hsWallet = (
@@ -117,12 +147,12 @@ export default class ScomWalletModal extends Module {
           onClick={() => this.onWalletSelected(wallet)}
         >
           <i-label
-            caption={wallet.provider?.displayName}
+            caption={wallet.displayName}
             margin={{ left: '1rem' }}
             wordBreak="break-word"
             font={{ size: '.875rem', bold: true, color: Theme.colors.primary.dark }}
           />
-          <i-image width={34} height="auto" url={wallet.provider?.image} />
+          <i-image width={34} height="auto" url={wallet.image} />
         </i-hstack>
       );
       this.walletMapper.set(wallet.name, hsWallet);
@@ -132,7 +162,9 @@ export default class ScomWalletModal extends Module {
 
   init() {
     super.init();
-    this.wallets = this.getAttribute('wallets', true, []);
+    const networks = this.getAttribute('networks', true, []);
+    const wallets = this.getAttribute('wallets', true, []);
+    this.setData({networks, wallets})
     this.onCustomWalletSelected = this.getAttribute('onCustomWalletSelected', true) || this.onCustomWalletSelected;
   }
 
