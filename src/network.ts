@@ -3,30 +3,18 @@ import { IExtendedNetwork } from './interface';
 import getNetworkList from '@scom/scom-network-list';
 
 export const updateNetworks = (options: any) => {
-  if (options.env) {
-    setEnv(options.env);
-  }
   if (options.infuraId) {
     setInfuraId(options.infuraId);
   }
   if (options.networks) {
     setNetworkList(options.networks, options.infuraId);
   }
-  
-  const clientWalletConfig = {
-    defaultChainId: state.defaultChainId,
-    networks: Object.values(state.networkMap),
-    infuraId: state.infuraId,
-  }
-  if (Wallet.getClientInstance()?.initClientWallet)
-    Wallet.getClientInstance().initClientWallet(clientWalletConfig);
 };
 
 const state = {
   networkMap: {} as { [key: number]: IExtendedNetwork },
   defaultChainId: 0,
-  infuraId: "",
-  env: ""
+  infuraId: ""
 }
 
 const setNetworkList = (networkList: IExtendedNetwork[] | "*", infuraId?: string) => {
@@ -92,14 +80,9 @@ export const getNetworkInfo = (chainId: number): IExtendedNetwork | undefined =>
 export const getSiteSupportedNetworks = () => {
   let networkFullList = Object.values(state.networkMap);
   let list = networkFullList.filter(network =>
-    !network.isDisabled && isValidEnv(network.env)
+    !network.isDisabled
   );
   return list
-}
-
-export const isValidEnv = (env: string) => {
-  const _env = state.env === 'testnet' || state.env === 'mainnet' ? state.env : "";
-  return !_env || !env || env === _env;
 }
 
 const setInfuraId = (infuraId: string) => {
@@ -108,12 +91,4 @@ const setInfuraId = (infuraId: string) => {
 
 export const getInfuraId = () => {
   return state.infuraId;
-}
-
-const setEnv = (env: string) => {
-  state.env = env;
-}
-
-export const getEnv = () => {
-  return state.env;
 }

@@ -41,9 +41,7 @@ declare module "@scom/scom-wallet-modal/network.ts" {
     export const updateNetworks: (options: any) => void;
     export const getNetworkInfo: (chainId: number) => IExtendedNetwork | undefined;
     export const getSiteSupportedNetworks: () => IExtendedNetwork[];
-    export const isValidEnv: (env: string) => boolean;
     export const getInfuraId: () => string;
-    export const getEnv: () => string;
 }
 /// <amd-module name="@scom/scom-wallet-modal/wallet.ts" />
 declare module "@scom/scom-wallet-modal/wallet.ts" {

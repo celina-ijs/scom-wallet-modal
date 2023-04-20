@@ -77,35 +77,23 @@ define("@scom/scom-wallet-modal/index.css.ts", ["require", "exports", "@ijstech/
         }
     });
 });
-define("@scom/scom-wallet-modal/network.ts", ["require", "exports", "@ijstech/eth-wallet", "@scom/scom-network-list"], function (require, exports, eth_wallet_1, scom_network_list_1) {
+define("@scom/scom-wallet-modal/network.ts", ["require", "exports", "@scom/scom-network-list"], function (require, exports, scom_network_list_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getEnv = exports.getInfuraId = exports.isValidEnv = exports.getSiteSupportedNetworks = exports.getNetworkInfo = exports.updateNetworks = void 0;
+    exports.getInfuraId = exports.getSiteSupportedNetworks = exports.getNetworkInfo = exports.updateNetworks = void 0;
     const updateNetworks = (options) => {
-        var _a;
-        if (options.env) {
-            setEnv(options.env);
-        }
         if (options.infuraId) {
             setInfuraId(options.infuraId);
         }
         if (options.networks) {
             setNetworkList(options.networks, options.infuraId);
         }
-        const clientWalletConfig = {
-            defaultChainId: state.defaultChainId,
-            networks: Object.values(state.networkMap),
-            infuraId: state.infuraId,
-        };
-        if ((_a = eth_wallet_1.Wallet.getClientInstance()) === null || _a === void 0 ? void 0 : _a.initClientWallet)
-            eth_wallet_1.Wallet.getClientInstance().initClientWallet(clientWalletConfig);
     };
     exports.updateNetworks = updateNetworks;
     const state = {
         networkMap: {},
         defaultChainId: 0,
-        infuraId: "",
-        env: ""
+        infuraId: ""
     };
     const setNetworkList = (networkList, infuraId) => {
         var _a, _b;
@@ -157,15 +145,10 @@ define("@scom/scom-wallet-modal/network.ts", ["require", "exports", "@ijstech/et
     exports.getNetworkInfo = getNetworkInfo;
     const getSiteSupportedNetworks = () => {
         let networkFullList = Object.values(state.networkMap);
-        let list = networkFullList.filter(network => !network.isDisabled && exports.isValidEnv(network.env));
+        let list = networkFullList.filter(network => !network.isDisabled);
         return list;
     };
     exports.getSiteSupportedNetworks = getSiteSupportedNetworks;
-    const isValidEnv = (env) => {
-        const _env = state.env === 'testnet' || state.env === 'mainnet' ? state.env : "";
-        return !_env || !env || env === _env;
-    };
-    exports.isValidEnv = isValidEnv;
     const setInfuraId = (infuraId) => {
         state.infuraId = infuraId;
     };
@@ -173,15 +156,8 @@ define("@scom/scom-wallet-modal/network.ts", ["require", "exports", "@ijstech/et
         return state.infuraId;
     };
     exports.getInfuraId = getInfuraId;
-    const setEnv = (env) => {
-        state.env = env;
-    };
-    const getEnv = () => {
-        return state.env;
-    };
-    exports.getEnv = getEnv;
 });
-define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/network.ts"], function (require, exports, components_2, eth_wallet_2, network_1) {
+define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/network.ts"], function (require, exports, components_2, eth_wallet_1, network_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.getWalletPluginProvider = exports.getWalletPluginMap = exports.setWalletPluginProvider = exports.updateWallets = exports.getSupportedWalletProviders = exports.connectWallet = exports.initWalletPlugins = exports.WalletPlugin = void 0;
@@ -197,9 +173,9 @@ define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/com
     async function getWalletPluginConfigProvider(wallet, pluginName, packageName, events, options) {
         switch (pluginName) {
             case WalletPlugin.MetaMask:
-                return new eth_wallet_2.MetaMaskProvider(wallet, events, options);
+                return new eth_wallet_1.MetaMaskProvider(wallet, events, options);
             case WalletPlugin.WalletConnect:
-                return new eth_wallet_2.Web3ModalProvider(wallet, events, options);
+                return new eth_wallet_1.Web3ModalProvider(wallet, events, options);
             default: {
                 if (packageName) {
                     const provider = await components_2.application.loadPackage(packageName, '*');
@@ -209,7 +185,7 @@ define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/com
         }
     }
     async function initWalletPlugins(eventHandlers) {
-        let wallet = eth_wallet_2.Wallet.getClientInstance();
+        let wallet = eth_wallet_1.Wallet.getClientInstance();
         state.walletPluginMap = {};
         const events = {
             onAccountChanged: async (account) => {
@@ -221,8 +197,8 @@ define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/com
                         connected = false;
                 }
                 if (connected) {
-                    localStorage.setItem('walletProvider', ((_b = (_a = eth_wallet_2.Wallet.getClientInstance()) === null || _a === void 0 ? void 0 : _a.clientSideProvider) === null || _b === void 0 ? void 0 : _b.name) || '');
-                    document.cookie = `scom__wallet=${((_d = (_c = eth_wallet_2.Wallet.getClientInstance()) === null || _c === void 0 ? void 0 : _c.clientSideProvider) === null || _d === void 0 ? void 0 : _d.name) || ''}`;
+                    localStorage.setItem('walletProvider', ((_b = (_a = eth_wallet_1.Wallet.getClientInstance()) === null || _a === void 0 ? void 0 : _a.clientSideProvider) === null || _b === void 0 ? void 0 : _b.name) || '');
+                    document.cookie = `scom__wallet=${((_d = (_c = eth_wallet_1.Wallet.getClientInstance()) === null || _c === void 0 ? void 0 : _c.clientSideProvider) === null || _d === void 0 ? void 0 : _d.name) || ''}`;
                 }
                 components_2.application.EventBus.dispatch("isWalletConnected" /* IsWalletConnected */, connected);
             },
@@ -272,7 +248,7 @@ define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/com
     exports.initWalletPlugins = initWalletPlugins;
     async function connectWallet(walletPlugin) {
         // let walletProvider = localStorage.getItem('walletProvider') || '';
-        let wallet = eth_wallet_2.Wallet.getClientInstance();
+        let wallet = eth_wallet_1.Wallet.getClientInstance();
         if (!wallet.chainId) {
             // wallet.chainId = getDefaultChainId();
         }
@@ -308,7 +284,7 @@ define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/com
     };
     exports.getWalletPluginProvider = getWalletPluginProvider;
 });
-define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/index.css.ts", "@scom/scom-wallet-modal/wallet.ts", "@scom/scom-wallet-modal/network.ts", "@scom/scom-wallet-modal/wallet.ts"], function (require, exports, components_3, eth_wallet_3, index_css_1, wallet_1, network_2, wallet_2) {
+define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/index.css.ts", "@scom/scom-wallet-modal/wallet.ts", "@scom/scom-wallet-modal/network.ts", "@scom/scom-wallet-modal/wallet.ts"], function (require, exports, components_3, eth_wallet_2, index_css_1, wallet_1, network_2, wallet_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
@@ -374,11 +350,11 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
         isWalletActive(walletPlugin) {
             var _a;
             let provider = wallet_1.getWalletPluginProvider(walletPlugin);
-            return provider ? provider.installed() && ((_a = eth_wallet_3.Wallet.getClientInstance().clientSideProvider) === null || _a === void 0 ? void 0 : _a.name) === walletPlugin : false;
+            return provider ? provider.installed() && ((_a = eth_wallet_2.Wallet.getClientInstance().clientSideProvider) === null || _a === void 0 ? void 0 : _a.name) === walletPlugin : false;
         }
         onOpenModal() {
             var _a, _b, _c;
-            let wallet = eth_wallet_3.Wallet.getClientInstance();
+            let wallet = eth_wallet_2.Wallet.getClientInstance();
             let isConnected = wallet.isConnected;
             if (this.currActiveWallet && this.walletMapper.has(this.currActiveWallet)) {
                 this.walletMapper.get(this.currActiveWallet).classList.remove('is-actived');
