@@ -292,9 +292,10 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
         constructor(parent, options) {
             super(parent, options);
             this.renderWalletList = async () => {
+                var _a;
                 if (!this.gridWalletList)
                     return;
-                if (this.wallets.length)
+                if ((_a = this.wallets) === null || _a === void 0 ? void 0 : _a.length)
                     await wallet_1.initWalletPlugins();
                 this.gridWalletList.clearInnerHTML();
                 const walletList = wallet_1.getSupportedWalletProviders();
