@@ -128,7 +128,7 @@ export default class ScomWalletModal extends Module {
 
   renderWalletList = async () => {
     if (!this.gridWalletList) return;
-    if (this.wallets.length) await initWalletPlugins();
+    if (this.wallets?.length) await initWalletPlugins();
     this.gridWalletList.clearInnerHTML();
     const walletList = getSupportedWalletProviders();
     this.walletMapper = new Map();
