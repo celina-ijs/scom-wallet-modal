@@ -55,7 +55,7 @@ declare module "@scom/scom-wallet-modal/wallet.ts" {
     export function initWalletPlugins(eventHandlers?: {
         [key: string]: Function;
     }): Promise<void>;
-    export function connectWallet(walletPlugin: string): Promise<IWallet>;
+    export function connectWallet(walletPlugin: string, triggeredByUser?: boolean): Promise<IWallet>;
     export const getSupportedWalletProviders: () => IClientSideProvider[];
     export const updateWallets: (options: any) => void;
     export const setWalletPluginProvider: (name: string, wallet: IWalletPlugin) => void;

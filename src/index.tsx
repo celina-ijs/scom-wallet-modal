@@ -118,7 +118,7 @@ export default class ScomWalletModal extends Module {
   private async onWalletSelected(wallet: IClientSideProvider) {
     const provider = getWalletPluginProvider(wallet.name);
     if (provider?.installed())
-      await connectWallet(wallet.name);
+      await connectWallet(wallet.name, true);
     else
       this.openLink(provider.homepage);
     this.hideModal()
