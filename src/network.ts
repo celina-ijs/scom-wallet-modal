@@ -92,3 +92,7 @@ const setInfuraId = (infuraId: string) => {
 export const getInfuraId = () => {
   return state.infuraId;
 }
+
+export const getDefaultChainId = () => {
+  return state.defaultChainId;
+}
