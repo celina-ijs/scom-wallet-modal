@@ -70,7 +70,10 @@ declare module "@scom/scom-wallet-modal/translations.json.ts" {
             connect_wallet: string;
             recommended_wallet_for_chrome: string;
         };
-        "zh-hant": {};
+        "zh-hant": {
+            connect_wallet: string;
+            recommended_wallet_for_chrome: string;
+        };
         vi: {
             connect_wallet: string;
             recommended_wallet_for_chrome: string;
