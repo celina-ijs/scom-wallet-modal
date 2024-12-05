@@ -304,7 +304,23 @@ define("@scom/scom-wallet-modal/wallet.ts", ["require", "exports", "@ijstech/com
     };
     exports.getWalletPluginProvider = getWalletPluginProvider;
 });
-define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/index.css.ts", "@scom/scom-wallet-modal/wallet.ts", "@scom/scom-wallet-modal/network.ts", "@scom/scom-wallet-modal/wallet.ts"], function (require, exports, components_3, eth_wallet_2, index_css_1, wallet_1, network_2, wallet_2) {
+define("@scom/scom-wallet-modal/translations.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-wallet-modal/translations.json.ts'/> 
+    exports.default = {
+        "en": {
+            "connect_wallet": "Connect Wallet",
+            "recommended_wallet_for_chrome": "Recommended wallet for Chrome"
+        },
+        "zh-hant": {},
+        "vi": {
+            "connect_wallet": "Kết nối ví",
+            "recommended_wallet_for_chrome": "Danh sách ví được khuyến khích cho Chrome"
+        }
+    };
+});
+define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", "@ijstech/eth-wallet", "@scom/scom-wallet-modal/index.css.ts", "@scom/scom-wallet-modal/wallet.ts", "@scom/scom-wallet-modal/network.ts", "@scom/scom-wallet-modal/wallet.ts", "@scom/scom-wallet-modal/translations.json.ts"], function (require, exports, components_3, eth_wallet_2, index_css_1, wallet_1, network_2, wallet_2, translations_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     const Theme = components_3.Styles.Theme.ThemeVars;
@@ -396,6 +412,7 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
                 this.onCustomWalletSelected(wallet);
         }
         init() {
+            this.i18n.init({ ...translations_json_1.default });
             super.init();
             const networks = this.getAttribute('networks', true, []);
             const wallets = this.getAttribute('wallets', true, []);
@@ -404,9 +421,9 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
         }
         render() {
             return (this.$render("i-panel", { class: index_css_1.default },
-                this.$render("i-modal", { id: 'mdConnect', title: 'Connect Wallet', class: 'os-modal', width: 440, closeIcon: { name: 'times' }, border: { radius: 10 }, onOpen: this.onOpenModal.bind(this) },
+                this.$render("i-modal", { id: 'mdConnect', title: '$connect_wallet', class: 'os-modal', width: 440, closeIcon: { name: 'times' }, border: { radius: 10 }, onOpen: this.onOpenModal.bind(this) },
                     this.$render("i-vstack", { padding: { left: '1rem', right: '1rem', bottom: '2rem' }, lineHeight: 1.5 },
-                        this.$render("i-label", { font: { size: '.875rem' }, caption: 'Recommended wallet for Chrome', margin: { top: '1rem' }, wordBreak: "break-word" }),
+                        this.$render("i-label", { font: { size: '.875rem' }, caption: '$recommended_wallet_for_chrome', margin: { top: '1rem' }, wordBreak: "break-word" }),
                         this.$render("i-panel", null,
                             this.$render("i-grid-layout", { id: 'gridWalletList', class: 'list-view', margin: { top: '0.5rem' }, columnsPerRow: 1, templateRows: ['max-content'], gap: { row: 8 } }))))));
         }
