@@ -63,6 +63,21 @@ declare module "@scom/scom-wallet-modal/wallet.ts" {
     export const getWalletPluginMap: () => Record<string, IWalletPlugin>;
     export const getWalletPluginProvider: (name: string) => IClientSideProvider;
 }
+/// <amd-module name="@scom/scom-wallet-modal/translations.json.ts" />
+declare module "@scom/scom-wallet-modal/translations.json.ts" {
+    const _default_1: {
+        en: {
+            connect_wallet: string;
+            recommended_wallet_for_chrome: string;
+        };
+        "zh-hant": {};
+        vi: {
+            connect_wallet: string;
+            recommended_wallet_for_chrome: string;
+        };
+    };
+    export default _default_1;
+}
 /// <amd-module name="@scom/scom-wallet-modal" />
 declare module "@scom/scom-wallet-modal" {
     import { Module, ControlElement, Container } from '@ijstech/components';

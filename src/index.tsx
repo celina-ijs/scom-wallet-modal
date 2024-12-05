@@ -16,6 +16,8 @@ import customStyle from './index.css'
 import { connectWallet, getSupportedWalletProviders, getWalletPluginProvider, initWalletPlugins } from './wallet'
 import { updateNetworks } from './network'
 import { updateWallets } from './wallet'
+import translations from './translations.json'
+
 export { IWalletPlugin }
 
 const Theme = Styles.Theme.ThemeVars
@@ -161,6 +163,7 @@ export default class ScomWalletModal extends Module {
   }
 
   init() {
+    this.i18n.init({...translations});
     super.init();
     const networks = this.getAttribute('networks', true, []);
     const wallets = this.getAttribute('wallets', true, []);
@@ -173,7 +176,7 @@ export default class ScomWalletModal extends Module {
       <i-panel class={customStyle}>
         <i-modal
           id='mdConnect'
-          title='Connect Wallet'
+          title='$connect_wallet'
           class='os-modal'
           width={440}
           closeIcon={{ name: 'times' }}
@@ -183,7 +186,7 @@ export default class ScomWalletModal extends Module {
           <i-vstack padding={{ left: '1rem', right: '1rem', bottom: '2rem' }} lineHeight={1.5}>
             <i-label
               font={{ size: '.875rem' }}
-              caption='Recommended wallet for Chrome'
+              caption='$recommended_wallet_for_chrome'
               margin={{ top: '1rem' }}
               wordBreak="break-word"
             ></i-label>
