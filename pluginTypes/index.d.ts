@@ -1,5 +1,5 @@
-/// <amd-module name="@scom/scom-wallet-modal/interface.ts" />
-declare module "@scom/scom-wallet-modal/interface.ts" {
+/// <amd-module name="@scom/scom-wallet-modal/interfaces.ts" />
+declare module "@scom/scom-wallet-modal/interfaces.ts" {
     import { IClientSideProvider, INetwork } from '@ijstech/eth-wallet';
     export interface IWalletPlugin {
         name: string;
@@ -35,33 +35,38 @@ declare module "@scom/scom-wallet-modal/index.css.ts" {
     const _default: string;
     export default _default;
 }
-/// <amd-module name="@scom/scom-wallet-modal/network.ts" />
-declare module "@scom/scom-wallet-modal/network.ts" {
-    import { IExtendedNetwork } from "@scom/scom-wallet-modal/interface.ts";
-    export const updateNetworks: (options: any) => void;
-    export const getNetworkInfo: (chainId: number) => IExtendedNetwork | undefined;
-    export const getSiteSupportedNetworks: () => IExtendedNetwork[];
-    export const getInfuraId: () => string;
-    export const getDefaultChainId: () => number;
-}
-/// <amd-module name="@scom/scom-wallet-modal/wallet.ts" />
-declare module "@scom/scom-wallet-modal/wallet.ts" {
-    import { IClientSideProvider } from '@ijstech/eth-wallet';
-    import { IWalletPlugin } from "@scom/scom-wallet-modal/interface.ts";
-    import { IWallet } from '@ijstech/eth-wallet';
+/// <amd-module name="@scom/scom-wallet-modal/model.ts" />
+declare module "@scom/scom-wallet-modal/model.ts" {
+    import { Wallet, IClientSideProviderEvents, IClientProviderOptions, IClientSideProvider, IWallet } from '@ijstech/eth-wallet';
+    import { IExtendedNetwork, IWalletPlugin } from "@scom/scom-wallet-modal/interfaces.ts";
     export enum WalletPlugin {
         MetaMask = "metamask",
         WalletConnect = "walletconnect"
     }
-    export function initWalletPlugins(eventHandlers?: {
-        [key: string]: Function;
-    }): Promise<void>;
-    export function connectWallet(walletPlugin: string, triggeredByUser?: boolean): Promise<IWallet>;
-    export const getSupportedWalletProviders: () => IClientSideProvider[];
-    export const updateWallets: (options: any) => void;
-    export const setWalletPluginProvider: (name: string, wallet: IWalletPlugin) => void;
-    export const getWalletPluginMap: () => Record<string, IWalletPlugin>;
-    export const getWalletPluginProvider: (name: string) => IClientSideProvider;
+    export class Model {
+        private networkMap;
+        private defaultChainId;
+        private infuraId;
+        private wallets;
+        private walletPluginMap;
+        updateNetworks(options: any): void;
+        setNetworkList(networkList: IExtendedNetwork[] | "*", infuraId?: string): void;
+        getNetworkInfo(chainId: number): IExtendedNetwork | undefined;
+        getSiteSupportedNetworks(): IExtendedNetwork[];
+        setInfuraId(infuraId: string): void;
+        getInfuraId(): string;
+        getDefaultChainId(): number;
+        getWalletPluginConfigProvider(wallet: Wallet, pluginName: string, packageName?: string, events?: IClientSideProviderEvents, options?: IClientProviderOptions): Promise<any>;
+        initWalletPlugins(eventHandlers?: {
+            [key: string]: Function;
+        }): Promise<void>;
+        connectWallet(walletPlugin: string, triggeredByUser?: boolean): Promise<IWallet>;
+        getSupportedWalletProviders(): IClientSideProvider[];
+        updateWallets(options: any): void;
+        setWalletPluginProvider(name: string, wallet: IWalletPlugin): void;
+        getWalletPluginMap(): Record<string, IWalletPlugin>;
+        getWalletPluginProvider(name: string): IClientSideProvider;
+    }
 }
 /// <amd-module name="@scom/scom-wallet-modal/translations.json.ts" />
 declare module "@scom/scom-wallet-modal/translations.json.ts" {
@@ -84,7 +89,7 @@ declare module "@scom/scom-wallet-modal/translations.json.ts" {
 /// <amd-module name="@scom/scom-wallet-modal" />
 declare module "@scom/scom-wallet-modal" {
     import { Module, ControlElement, Container } from '@ijstech/components';
-    import { IData, INetworkConfig, IWalletPlugin } from "@scom/scom-wallet-modal/interface.ts";
+    import { IData, INetworkConfig, IWalletPlugin } from "@scom/scom-wallet-modal/interfaces.ts";
     import { IClientSideProvider } from '@ijstech/eth-wallet';
     export { IWalletPlugin };
     type onSelectedCallback = (wallet: IClientSideProvider) => void;
@@ -106,6 +111,7 @@ declare module "@scom/scom-wallet-modal" {
         private _data;
         private gridWalletList;
         private mdConnect;
+        private model;
         onCustomWalletSelected: onSelectedCallback;
         constructor(parent?: Container, options?: any);
         static create(options?: ScomWalletModalElement, parent?: Container): Promise<ScomWalletModal>;
