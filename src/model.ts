@@ -162,6 +162,7 @@ export class Model {
             let pluginName = walletPlugin.name;
             let providerOptions;
             if (pluginName == WalletPlugin.WalletConnect) {
+                if (networkList.length === 0) continue;
                 let optionalChains = networkList.map((network) => network.chainId);
                 let mainChainId = networkList[0].chainId;
                 let walletConnectConfig = application.store?.walletConnectConfig;
@@ -208,8 +209,14 @@ export class Model {
     }
     
     getSupportedWalletProviders(): IClientSideProvider[] {
+        let providers: IClientSideProvider[] = [];
         const walletPluginMap = this.getWalletPluginMap();
-        return this.wallets.map(v => walletPluginMap[v.name]?.provider || null);
+        for (let wallet of this.wallets) {
+            if (walletPluginMap[wallet.name]) {
+                providers.push(walletPluginMap[wallet.name].provider);
+            }
+        }
+        return providers;
     }
     
     updateWallets(options: any) {

@@ -225,6 +225,8 @@ define("@scom/scom-wallet-modal/model.ts", ["require", "exports", "@ijstech/eth-
                 let pluginName = walletPlugin.name;
                 let providerOptions;
                 if (pluginName == WalletPlugin.WalletConnect) {
+                    if (networkList.length === 0)
+                        continue;
                     let optionalChains = networkList.map((network) => network.chainId);
                     let mainChainId = networkList[0].chainId;
                     let walletConnectConfig = components_2.application.store?.walletConnectConfig;
@@ -269,8 +271,14 @@ define("@scom/scom-wallet-modal/model.ts", ["require", "exports", "@ijstech/eth-
             return wallet;
         }
         getSupportedWalletProviders() {
+            let providers = [];
             const walletPluginMap = this.getWalletPluginMap();
-            return this.wallets.map(v => walletPluginMap[v.name]?.provider || null);
+            for (let wallet of this.wallets) {
+                if (walletPluginMap[wallet.name]) {
+                    providers.push(walletPluginMap[wallet.name].provider);
+                }
+            }
+            return providers;
         }
         updateWallets(options) {
             if (options.wallets) {
