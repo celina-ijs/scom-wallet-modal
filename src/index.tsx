@@ -50,6 +50,7 @@ export default class ScomWalletModal extends Module {
 
     constructor(parent?: Container, options?: any) {
         super(parent, options)
+        this.deferReadyCallback = true;
         this.model = new Model();
     }
 
@@ -169,6 +170,7 @@ export default class ScomWalletModal extends Module {
         const wallets = this.getAttribute('wallets', true, []);
         this.setData({ networks, wallets })
         this.onCustomWalletSelected = this.getAttribute('onCustomWalletSelected', true) || this.onCustomWalletSelected;
+        this.executeReadyCallback();
     }
 
     render() {

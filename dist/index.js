@@ -342,6 +342,7 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
                     this.gridWalletList.append(hsWallet);
                 });
             };
+            this.deferReadyCallback = true;
             this.model = new model_1.Model();
         }
         static async create(options, parent) {
@@ -415,6 +416,7 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
             const wallets = this.getAttribute('wallets', true, []);
             this.setData({ networks, wallets });
             this.onCustomWalletSelected = this.getAttribute('onCustomWalletSelected', true) || this.onCustomWalletSelected;
+            this.executeReadyCallback();
         }
         render() {
             return (this.$render("i-panel", { class: index_css_1.default },
