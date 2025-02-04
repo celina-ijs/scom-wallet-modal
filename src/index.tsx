@@ -163,12 +163,12 @@ export default class ScomWalletModal extends Module {
         })
     }
 
-    init() {
+    async init() {
         this.i18n.init({ ...translations });
         super.init();
         const networks = this.getAttribute('networks', true, []);
         const wallets = this.getAttribute('wallets', true, []);
-        this.setData({ networks, wallets })
+        await this.setData({ networks, wallets })
         this.onCustomWalletSelected = this.getAttribute('onCustomWalletSelected', true) || this.onCustomWalletSelected;
         this.executeReadyCallback();
     }

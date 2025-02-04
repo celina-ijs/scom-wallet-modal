@@ -409,12 +409,12 @@ define("@scom/scom-wallet-modal", ["require", "exports", "@ijstech/components", 
             if (this.onCustomWalletSelected)
                 this.onCustomWalletSelected(wallet);
         }
-        init() {
+        async init() {
             this.i18n.init({ ...translations_json_1.default });
             super.init();
             const networks = this.getAttribute('networks', true, []);
             const wallets = this.getAttribute('wallets', true, []);
-            this.setData({ networks, wallets });
+            await this.setData({ networks, wallets });
             this.onCustomWalletSelected = this.getAttribute('onCustomWalletSelected', true) || this.onCustomWalletSelected;
             this.executeReadyCallback();
         }

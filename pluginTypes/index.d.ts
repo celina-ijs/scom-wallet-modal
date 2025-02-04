@@ -128,7 +128,7 @@ declare module "@scom/scom-wallet-modal" {
         private openLink;
         private onWalletSelected;
         renderWalletList: () => Promise<void>;
-        init(): void;
+        init(): Promise<void>;
         render(): any;
     }
 }
